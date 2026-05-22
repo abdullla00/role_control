@@ -1,0 +1,93 @@
+{
+ "actions": [],
+ "creation": "2026-05-22 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "reference_doctype",
+  "view",
+  "button_category",
+  "standard_button",
+  "button_label",
+  "button_group",
+  "apply_on_docstatus",
+  "hide"
+ ],
+ "fields": [
+  {
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Reference DocType",
+   "link_filters": "[[\"DocType\",\"istable\",\"=\",0]]",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "default": "Form",
+   "fieldname": "view",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "View",
+   "options": "Form\nList\nBoth",
+   "reqd": 1
+  },
+  {
+   "fieldname": "button_category",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Button Category",
+   "options": "Standard\nCustom\nWorkflow\nMenu Action",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.button_category=='Standard'",
+   "fieldname": "standard_button",
+   "fieldtype": "Select",
+   "label": "Standard Button",
+   "mandatory_depends_on": "eval:doc.button_category=='Standard'",
+   "options": "Save\nSubmit\nUpdate\nCancel\nAmend\nEdit\nAdd\nRefresh\nDelete\nFilter\nExport"
+  },
+  {
+   "depends_on": "eval:['Custom','Menu Action'].includes(doc.button_category)",
+   "fieldname": "button_label",
+   "fieldtype": "Autocomplete",
+   "in_list_view": 1,
+   "label": "Button Label",
+   "mandatory_depends_on": "eval:['Custom','Menu Action'].includes(doc.button_category)"
+  },
+  {
+   "depends_on": "eval:doc.button_category=='Custom'",
+   "fieldname": "button_group",
+   "fieldtype": "Autocomplete",
+   "label": "Button Group"
+  },
+  {
+   "default": "All",
+   "fieldname": "apply_on_docstatus",
+   "fieldtype": "Select",
+   "label": "Apply On Docstatus",
+   "options": "All\nDraft\nSubmitted\nCancelled"
+  },
+  {
+   "default": "1",
+   "fieldname": "hide",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Hide"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-05-22 23:25:17.067612",
+ "modified_by": "Administrator",
+ "module": "Role Control",
+ "name": "Form Button Control Detail",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,53 @@
+{
+ "app": "role_control",
+ "charts": [],
+ "content": "[{\"id\":\"fbc_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Role Control</b></span>\",\"col\":12}},{\"id\":\"fbc_shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Form Button Control\",\"col\":4}}]",
+ "creation": "2026-05-22 00:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "lock",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Role Control",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Form Button Control",
+   "link_count": 0,
+   "link_to": "Form Button Control",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-05-22 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Role Control",
+ "name": "Role Control",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "restrict_to_domain": "",
+ "roles": [
+  {
+   "role": "System Manager"
+  }
+ ],
+ "sequence_id": 1,
+ "shortcuts": [
+  {
+   "color": "Blue",
+   "doc_view": "List",
+   "label": "Form Button Control",
+   "link_to": "Form Button Control",
+   "type": "DocType"
+  }
+ ],
+ "title": "Role Control"
+}

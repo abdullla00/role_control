@@ -1,40 +1,83 @@
-### Role Control
+# Role Control
 
-Advanced role utilities and UI control overrides for Frappe and ERPNext frameworks.
+Advanced role utilities and UI control overrides for Frappe and ERPNext.
+
+## Form Button Control
+
+Centrally hide form and list buttons per **Role** and/or **User**, optionally scoped by **Company**.
 
 ### Installation
 
-You can install this app using the [bench](https://github.com/frappe/bench) CLI:
-
 ```bash
 cd $PATH_TO_YOUR_BENCH
-bench get-app $URL_OF_THIS_REPO --branch version-16
-bench install-app role_control
+bench get-app apps/role_control --branch version-16
+bench --site <site> install-app role_control
+bench migrate
+bench build --app role_control
 ```
 
-### Contributing
+### Creating a rule
 
-This app uses `pre-commit` for code formatting and linting. Please [install pre-commit](https://pre-commit.com/#installation) and enable it for this repository:
+1. Open **Role Control** workspace → **Form Button Control**.
+2. Set **Role** or **User** (at least one required).
+3. Optionally set **Company** (blank = all companies).
+4. Set **Priority** (higher wins when rules conflict).
+5. Add child rows:
+   - **Reference DocType** — target form (e.g. `Job Order`).
+   - **View** — `Form`, `List`, or `Both`.
+   - **Button Category** — `Standard`, `Custom`, `Workflow`, or `Menu Action`.
+   - **Button Label** — Autocomplete suggestions from JS scan + hook registry (Custom / Menu Action); you can still type a custom label.
+   - **Button Group** — optional third argument to `add_custom_button`.
+   - **Apply On Docstatus** — when the rule applies on forms (`All` = always).
+
+### Company matching
+
+- On **forms**, the open document’s `company` field is used when present; otherwise the user’s default Company.
+- On **list views**, the user’s default Company is used.
+
+### Dynamic button label options
+
+For **Custom** and **Menu Action**, when you set **Reference DocType**, **Button Label** loads suggestions from:
+
+1. **JS scan** — `add_custom_button` / `add_menu_item` in doctype `.js`, hook `doctype_js` / `doctype_list_js`, and enabled **Client Script** records.
+2. **Menu catalog** — common Frappe form menu items (`Email`, `Duplicate`, `Rename`, …) for Menu Action.
+3. **`button_control_registry` hook** — other apps register extra labels (registry wins over scan for the same label).
+
+Optional: in any app's `hooks.py`:
+
+```python
+button_control_registry = {
+    "Job Order": [
+        {"category": "Custom", "label": "Make Return Ticket", "group": None},
+    ],
+}
+```
+
+**Limitations:** Only literal `__("Label")` strings are discovered. Dynamic labels (`__("Make {0}", [x])`) and conditionally added buttons must be registered manually in the hook or typed in the field.
+
+**Using the dropdown:** In the child table row editor, click **Button Label** or **Button Group** (or focus the field) to load suggestions. Options are loaded via `get_query` when the field is focused, not as a static Select list.
+
+### Button label examples (Galiska Job Order)
+
+| Label | Category |
+|-------|----------|
+| `Make Return Ticket` | Custom |
+| `Complete Operation` | Custom |
+| `Submit` | Standard |
+| `Cancel` | Standard |
+| Workflow transition name | Workflow |
+| `Email` | Menu Action |
+
+### Security
+
+Button hiding is **UI-only**. Users may still invoke actions via API, shortcuts, or custom scripts unless blocked by DocPerm and server-side checks. Do not rely on this app as the sole authorization layer.
+
+### Bypass
+
+Rules do not apply when logged in as **Administrator** (so setup is never blocked). Rules **do** apply to users with the **System Manager** role, including rules where `role` = System Manager (e.g. FBC-00037).
+
+### Tests
 
 ```bash
-cd apps/role_control
-pre-commit install
+bench --site <site> run-tests --app role_control
 ```
-
-Pre-commit is configured to use the following tools for checking and formatting your code:
-
-- ruff
-- eslint
-- prettier
-- pyupgrade
-### CI
-
-This app can use GitHub Actions for CI. The following workflows are configured:
-
-- CI: Installs this app and runs unit tests on every push to `develop` branch.
-- Linters: Runs [Frappe Semgrep Rules](https://github.com/frappe/semgrep-rules) and [pip-audit](https://pypi.org/project/pip-audit/) on every pull request.
-
-
-### License
-
-mit

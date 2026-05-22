@@ -5,6 +5,10 @@ app_description = "Advanced role utilities and UI control overrides for Frappe a
 app_email = "bruskabo@gmail.com"
 app_license = "mit"
 
+# Other apps can register button labels per doctype:
+# button_control_registry = {"Job Order": [{"category": "Custom", "label": "...", "group": None}]}
+button_control_registry = {}
+
 # Apps
 # ------------------
 
@@ -26,7 +30,7 @@ app_license = "mit"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/role_control/css/role_control.css"
-# app_include_js = "/assets/role_control/js/role_control.js"
+app_include_js = "/assets/role_control/js/form_button_control.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/role_control/css/role_control.css"
@@ -138,13 +142,12 @@ app_license = "mit"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	"Form Button Control": {
+		"on_update": "role_control.role_control.api.button_control.clear_cache_on_doc_event",
+		"on_trash": "role_control.role_control.api.button_control.clear_cache_on_doc_event",
+	},
+}
 
 # Scheduled Tasks
 # ---------------
