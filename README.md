@@ -10,7 +10,7 @@ Centrally hide form and list buttons per **Role** and/or **User**, optionally sc
 
 ```bash
 cd $PATH_TO_YOUR_BENCH
-bench get-app apps/role_control --branch version-16
+bench get-app apps/role_control
 bench --site <site> install-app role_control
 bench migrate
 bench build --app role_control
@@ -53,7 +53,7 @@ button_control_registry = {
 }
 ```
 
-**Limitations:** Only literal `__("Label")` strings are discovered. Dynamic labels (`__("Make {0}", [x])`) and conditionally added buttons must be registered manually in the hook or typed in the field.
+**Limitations:** Only literal `__("Label")` strings in `add_custom_button` calls are discovered (including multiline calls with a third-argument group). Dynamic first arguments (variables) and `__("View {0}", [ref])` are not scanned; literal `__("View …")` labels in JS maps are listed under group **Navigate**. Grid `add_custom_button` calls (e.g. row **Swap**) are ignored. Override or type labels manually via the `button_control_registry` hook when needed.
 
 **Using the dropdown:** In the child table row editor, click **Button Label** or **Button Group** (or focus the field) to load suggestions. Options are loaded via `get_query` when the field is focused, not as a static Select list.
 

@@ -31,14 +31,13 @@ FIXED_MENU_CATALOG = [
 	"Undo",
 ]
 
-CUSTOM_BUTTON_PATTERNS = [
-	re.compile(r"""add_custom_button\s*\(\s*__\s*\(\s*["']([^"']+)["']""", re.MULTILINE),
-	re.compile(r"""add_custom_button\s*\(\s*["']([^"']+)["']""", re.MULTILINE),
-]
+ADD_CUSTOM_BUTTON_NEEDLE = "add_custom_button"
+SKIP_ADD_CUSTOM_BUTTON_PREFIXES = ("grid.", "listview.")
 
-CUSTOM_BUTTON_WITH_GROUP_PATTERN = re.compile(
-	r"""add_custom_button\s*\(\s*__\s*\(\s*["']([^"']+)["']\s*\)\s*,\s*function\s*\([^)]*\)\s*\{[^}]*\}\s*,\s*__\s*\(\s*["']([^"']+)["']""",
-	re.MULTILINE | re.DOTALL,
+# Literal __("View …") used in navigate helpers / label maps.
+VIEW_BUTTON_LABEL_PATTERN = re.compile(
+	r"""__\s*\(\s*["'](View [^"']+)["']\s*\)""",
+	re.MULTILINE,
 )
 
 MENU_PATTERNS = [
@@ -138,22 +137,138 @@ def _read_file_content(path: str) -> str:
 		return ""
 
 
+def _extract_i18n_literal(arg: str) -> str | None:
+	arg = (arg or "").strip()
+	if not arg:
+		return None
+
+	match = re.match(r"""^__\s*\(\s*["']([^"']+)["']\s*\)""", arg)
+	if match:
+		return match.group(1).strip()
+
+	match = re.match(r"""^["']([^"']+)["']\s*$""", arg)
+	if match:
+		return match.group(1).strip()
+
+	return None
+
+
+def _split_js_call_args(content: str, args_start: int) -> list[str]:
+	"""Split top-level arguments for a call whose '(' opens at args_start - 1."""
+	args: list[str] = []
+	current: list[str] = []
+	depth_paren = 1
+	depth_brace = 0
+	depth_bracket = 0
+	string_char: str | None = None
+	escape = False
+	i = args_start
+
+	while i < len(content) and depth_paren > 0:
+		char = content[i]
+
+		if string_char:
+			current.append(char)
+			if escape:
+				escape = False
+			elif char == "\\":
+				escape = True
+			elif char == string_char:
+				string_char = None
+			i += 1
+			continue
+
+		if char in ("'", '"', "`"):
+			string_char = char
+			current.append(char)
+			i += 1
+			continue
+
+		if char == "(":
+			depth_paren += 1
+			current.append(char)
+		elif char == ")":
+			depth_paren -= 1
+			if depth_paren == 0:
+				part = "".join(current).strip()
+				if part:
+					args.append(part)
+				break
+			current.append(char)
+		elif char == "{":
+			depth_brace += 1
+			current.append(char)
+		elif char == "}":
+			depth_brace -= 1
+			current.append(char)
+		elif char == "[":
+			depth_bracket += 1
+			current.append(char)
+		elif char == "]":
+			depth_bracket -= 1
+			current.append(char)
+		elif char == "," and depth_paren == 1 and depth_brace == 0 and depth_bracket == 0:
+			args.append("".join(current).strip())
+			current = []
+		else:
+			current.append(char)
+
+		i += 1
+
+	return args
+
+
+def _iter_add_custom_button_calls(content: str):
+	"""Yield (label, group) for frm/page add_custom_button calls (not grid)."""
+	pos = 0
+	needle_len = len(ADD_CUSTOM_BUTTON_NEEDLE)
+
+	while True:
+		idx = content.find(ADD_CUSTOM_BUTTON_NEEDLE, pos)
+		if idx == -1:
+			break
+
+		prefix = content[max(0, idx - 12) : idx]
+		if any(prefix.endswith(skip) for skip in SKIP_ADD_CUSTOM_BUTTON_PREFIXES):
+			pos = idx + needle_len
+			continue
+
+		open_paren = content.find("(", idx + needle_len)
+		if open_paren == -1:
+			pos = idx + 1
+			continue
+
+		args = _split_js_call_args(content, open_paren + 1)
+		if args:
+			label = _extract_i18n_literal(args[0])
+			group = _extract_i18n_literal(args[2]) if len(args) >= 3 else None
+			if label:
+				yield label, group
+
+		pos = open_paren + 1
+
+
+def _scan_view_button_literals(content: str, source: str) -> dict[tuple[str, str | None], ButtonOption]:
+	"""Pick up __("View …") labels (e.g. navigate label maps)."""
+	found: dict[tuple[str, str | None], ButtonOption] = {}
+	for match in VIEW_BUTTON_LABEL_PATTERN.finditer(content):
+		label = match.group(1).strip()
+		if label:
+			key = (label, "Navigate")
+			found[key] = _make_option(label, "Navigate", source)
+	return found
+
+
 def _scan_custom_buttons(content: str, source: str) -> dict[tuple[str, str | None], ButtonOption]:
 	found: dict[tuple[str, str | None], ButtonOption] = {}
 
-	for pattern in CUSTOM_BUTTON_PATTERNS:
-		for match in pattern.finditer(content):
-			label = match.group(1).strip()
-			if label:
-				key = (label, None)
-				found[key] = _make_option(label, None, source)
+	for label, group in _iter_add_custom_button_calls(content):
+		key = (label, group)
+		found[key] = _make_option(label, group, source)
 
-	for match in CUSTOM_BUTTON_WITH_GROUP_PATTERN.finditer(content):
-		label = match.group(1).strip()
-		group = match.group(2).strip() if match.lastindex and match.lastindex >= 2 else None
-		if label:
-			key = (label, group)
-			found[key] = _make_option(label, group, source)
+	# Navigate map literals; grouped entries from the parser win on duplicate keys.
+	for key, option in _scan_view_button_literals(content, source).items():
+		found.setdefault(key, option)
 
 	return found
 
@@ -268,28 +383,47 @@ def _filter_options_by_txt(options: list[ButtonOption], txt: str) -> list[Button
 
 
 def _as_autocomplete_results(options: list[ButtonOption]) -> list[dict]:
-	return [
-		{
-			"value": o["value"],
-			"label": o["label"],
-			"description": o.get("description") or "",
+	"""One row per label; merge group hints when the same label appears in multiple groups."""
+	by_value: dict[str, dict] = {}
+
+	for option in options:
+		value = option["value"]
+		description = option.get("description") or ""
+		if value in by_value:
+			existing = by_value[value]["description"]
+			if description and description not in existing:
+				by_value[value]["description"] = (
+					f"{existing}; {description}" if existing else description
+				)
+			continue
+		by_value[value] = {
+			"value": value,
+			"label": option["label"],
+			"description": description,
 		}
-		for o in options
-	]
+
+	return sorted(by_value.values(), key=lambda row: (row.get("label") or "").lower())
 
 
 def _get_unique_groups(doctype: str, view: str, button_label: str | None = None) -> list[str]:
 	options = _get_cached_button_options(doctype, "Custom", view or "Form")
-	groups: set[str] = set()
+	has_toolbar = False
+	named_groups: set[str] = set()
 
 	for option in options:
 		if button_label and option.get("value") != button_label:
 			continue
 		group = (option.get("group") or "").strip()
 		if group:
-			groups.add(group)
+			named_groups.add(group)
+		else:
+			has_toolbar = True
 
-	return sorted(groups)
+	result: list[str] = []
+	if has_toolbar:
+		result.append("")
+	result.extend(sorted(named_groups))
+	return result
 
 
 @frappe.whitelist()
@@ -338,4 +472,11 @@ def search_button_groups(
 		txt_lower = txt.lower()
 		groups = [g for g in groups if txt_lower in g.lower()]
 
-	return [{"value": group, "label": group, "description": ""} for group in groups]
+	return [
+		{
+			"value": group,
+			"label": "(Main toolbar)" if group == "" else group,
+			"description": "",
+		}
+		for group in groups
+	]

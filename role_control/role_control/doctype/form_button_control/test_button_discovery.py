@@ -38,6 +38,27 @@ class TestButtonDiscovery(UnitTestCase):
 		labels = {key[0] for key in found}
 		self.assertIn("Make Return Ticket", labels)
 		self.assertIn("Grouped", labels)
+		self.assertEqual(found[("Grouped", "Update")]["group"], "Update")
+
+	def test_scan_multiline_custom_button_with_group(self):
+		content = """
+		frm.add_custom_button(
+			__("View Job Performance"),
+			function () {
+				jo_open_linked(frm, "Job Performance");
+			},
+			__("Navigate")
+		);
+		"""
+		found = _scan_custom_buttons(content, "test")
+		self.assertIn(("View Job Performance", "Navigate"), found)
+
+	def test_scan_skips_grid_custom_buttons(self):
+		content = """
+		swap_button = grid.add_custom_button(__("Swap"), function () {});
+		"""
+		found = _scan_custom_buttons(content, "test")
+		self.assertNotIn("Swap", {key[0] for key in found})
 
 	def test_menu_catalog_includes_email(self):
 		catalog = _get_menu_catalog_options()
@@ -81,7 +102,7 @@ class TestButtonDiscovery(UnitTestCase):
 	def test_search_button_groups_filtered_by_label(self):
 		frappe.set_user("Administrator")
 		groups = _get_unique_groups("Job Order", "Form", "Make Delivery Ticket")
-		self.assertTrue(any("Actions" in g for g in groups) or len(groups) >= 0)
+		self.assertIn("Actions", groups)
 
 		results = search_button_groups(
 			reference_doctype="Job Order",
@@ -90,6 +111,30 @@ class TestButtonDiscovery(UnitTestCase):
 		)
 		if results:
 			self.assertTrue(all("value" in r for r in results))
+
+	def test_job_order_discovery_includes_navigate_group(self):
+		frappe.set_user("Administrator")
+		clear_options_cache()
+		options = get_button_options("Job Order", "Custom", "Form")
+		groups = {o.get("group") for o in options if o.get("group")}
+		labels = {o["value"] for o in options}
+		self.assertIn("Navigate", groups)
+		self.assertIn("Actions", groups)
+		self.assertIn("Make Invoice", labels)
+		self.assertIn("View Return Ticket", labels)
+		self.assertNotIn("Swap", labels)
+
+	def test_search_button_labels_dedupes_by_value(self):
+		frappe.set_user("Administrator")
+		clear_options_cache()
+		results = search_button_labels(
+			txt="Make Delivery Ticket",
+			reference_doctype="Job Order",
+			button_category="Custom",
+			view="Form",
+		)
+		values = [r["value"] for r in results]
+		self.assertEqual(values.count("Make Delivery Ticket"), 1)
 
 	def test_cache_cleared_with_button_control_cache(self):
 		frappe.set_user("Administrator")
