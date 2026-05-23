@@ -40,7 +40,11 @@ def _view_matches(row_view: str, requested_view: str) -> bool:
 
 
 def _rule_key(rule: dict) -> str:
-	button_id = rule.get("standard_button") or rule.get("button_label") or ""
+	category = rule.get("button_category") or ""
+	if category == "Standard" and rule.get("standard_button"):
+		button_id = rule.get("standard_button")
+	else:
+		button_id = rule.get("button_label") or rule.get("standard_button") or ""
 	return ":".join(
 		[
 			rule.get("button_category") or "",

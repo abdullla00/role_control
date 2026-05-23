@@ -6,6 +6,7 @@ from frappe.tests import UnitTestCase
 
 from role_control.role_control.api.button_control import (
 	_get_cached_rules,
+	_merge_rules,
 	clear_cache_for_doc,
 	apply_on_docstatus_matches,
 	get_applicable_rules,
@@ -249,3 +250,37 @@ class TestFormButtonControl(UnitTestCase):
 		self.assertTrue(apply_on_docstatus_matches("All", 0))
 		self.assertTrue(apply_on_docstatus_matches("Draft", 0))
 		self.assertFalse(apply_on_docstatus_matches("Submitted", 0))
+
+	def test_merge_keeps_distinct_custom_labels_with_shared_standard_button(self):
+		rules = [
+			{
+				"button_category": "Custom",
+				"standard_button": "Save",
+				"button_label": "View Invoice",
+				"button_group": "Navigate",
+				"apply_on_docstatus": "All",
+				"view": "Form",
+			},
+			{
+				"button_category": "Custom",
+				"standard_button": "Save",
+				"button_label": "View Delivery Ticket",
+				"button_group": "Navigate",
+				"apply_on_docstatus": "All",
+				"view": "Form",
+			},
+			{
+				"button_category": "Custom",
+				"standard_button": "Save",
+				"button_label": "View Return Ticket",
+				"button_group": "Navigate",
+				"apply_on_docstatus": "All",
+				"view": "Form",
+			},
+		]
+		merged = _merge_rules(rules)
+		labels = {r["button_label"] for r in merged}
+		self.assertEqual(
+			labels,
+			{"View Invoice", "View Delivery Ticket", "View Return Ticket"},
+		)

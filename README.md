@@ -43,30 +43,9 @@ For **Custom** and **Menu Action**, when you set **Reference DocType**, **Button
 2. **Menu catalog** — common Frappe form menu items (`Email`, `Duplicate`, `Rename`, …) for Menu Action.
 3. **`button_control_registry` hook** — other apps register extra labels (registry wins over scan for the same label).
 
-Optional: in any app's `hooks.py`:
-
-```python
-button_control_registry = {
-    "Job Order": [
-        {"category": "Custom", "label": "Make Return Ticket", "group": None},
-    ],
-}
-```
-
 **Limitations:** Only literal `__("Label")` strings in `add_custom_button` calls are discovered (including multiline calls with a third-argument group). Dynamic first arguments (variables) and `__("View {0}", [ref])` are not scanned; literal `__("View …")` labels in JS maps are listed under group **Navigate**. Grid `add_custom_button` calls (e.g. row **Swap**) are ignored. Override or type labels manually via the `button_control_registry` hook when needed.
 
 **Using the dropdown:** In the child table row editor, click **Button Label** or **Button Group** (or focus the field) to load suggestions. Options are loaded via `get_query` when the field is focused, not as a static Select list.
-
-### Button label examples (Galiska Job Order)
-
-| Label | Category |
-|-------|----------|
-| `Make Return Ticket` | Custom |
-| `Complete Operation` | Custom |
-| `Submit` | Standard |
-| `Cancel` | Standard |
-| Workflow transition name | Workflow |
-| `Email` | Menu Action |
 
 ### Security
 
