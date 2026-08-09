@@ -60,3 +60,53 @@ Rules do not apply when logged in as **Administrator** (so setup is never blocke
 ```bash
 bench --site <site> run-tests --app role_control
 ```
+
+## Number Card Control
+
+Server-enforced denylist for **Number Cards** (Workspace + Dashboard + `get_result` API), with optional **field-aware auto-deny** for Document Type cards that Sum/Avg/Min/Max a field the user cannot read (permlevel / mask).
+
+### Desk home
+
+Open **Role Control** from the Desk sidebar (shield icon), or go to `/app/role-control`.
+
+The workspace shows live counts for enabled button rules, number-card rules, and hidden cards, plus shortcuts into Form Button Control, Number Card Control, and the Chief Manager auto-seed list.
+
+### Why
+
+Core Number Cards have no roles table (unlike Dashboard Charts). A role with DocType read can still load a valuation card and then fail on a permlevel-9 field (e.g. `Stock Entry.total_incoming_value`).
+
+### Creating a rule
+
+1. Open **Role Control** workspace → **Number Card Control**.
+2. Set **Role** or **User** (at least one required).
+3. Optionally set **Company** (blank = all companies).
+4. Set **Priority** (higher wins when rules conflict).
+5. Add child rows: **Number Card** + **Hide**.
+
+### Field-aware auto-deny
+
+When `role_control_field_aware_number_cards` is enabled (default), Document Type cards using Sum/Average/Minimum/Maximum are hidden for users who lack read (or unmask) access to the aggregate field. Count cards are never field-aware-hidden.
+
+### Auto-seed (Chief Manager)
+
+On migrate (and when a sensitive Number Card is saved), if Role `Chief Manager` exists, the app maintains system seed document `NCC-CHIEF-MANAGER-SENSITIVE`:
+
+- Discovers Document Type cards aggregating masked / high-permlevel fields (plus fallback `Manufactured Items Value` when present).
+- **Append-once:** cards an admin removes are moved to **Ignored Cards** and are never re-added unless the ignored row is cleared.
+
+### Site config
+
+| Key | Default | Meaning |
+| --- | --- | --- |
+| `role_control_field_aware_number_cards` | `1` | Field-aware auto-deny |
+| `role_control_auto_seed_sensitive_number_cards` | `1` | Auto seed / catch-up |
+
+### Security
+
+Unlike Form Button Control, Number Card Control is **server-enforced** (`has_permission`, list query, and whitelist overrides for `get_result` / `get_percentage_difference`). Blocked API calls raise a clean **Not permitted** error without leaking field names.
+
+Empty workspace column gaps may remain where a middle card was hidden (client prune is not in v1).
+
+### Bypass
+
+Same as Form Button Control: **Administrator** only.

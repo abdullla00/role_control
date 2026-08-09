@@ -1,0 +1,110 @@
+{
+ "app": "role_control",
+ "charts": [],
+ "content": "[{\"id\": \"rc_hero\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h3\\\"><b>Role Control</b></span>\", \"col\": 12}}, {\"id\": \"rc_mission\", \"type\": \"paragraph\", \"data\": {\"text\": \"Server-aware access controls for Desk UI \\u2014 hide form buttons and sensitive number cards per role or user, without breaking workspaces.\", \"col\": 12}}, {\"id\": \"rc_spacer_1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"rc_nc_buttons\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"RC Button Rules\", \"col\": 4}}, {\"id\": \"rc_nc_cards\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"RC Number Card Rules\", \"col\": 4}}, {\"id\": \"rc_nc_hidden\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"RC Hidden Cards\", \"col\": 4}}, {\"id\": \"rc_spacer_2\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"rc_sec_quick\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Quick open</b></span>\", \"col\": 12}}, {\"id\": \"rc_sc_fbc\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Form Button Control\", \"col\": 4}}, {\"id\": \"rc_sc_ncc\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Number Card Control\", \"col\": 4}}, {\"id\": \"rc_sc_seed\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Chief Manager Seed\", \"col\": 4}}, {\"id\": \"rc_spacer_3\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"rc_card_ui\", \"type\": \"card\", \"data\": {\"card_name\": \"UI Controls\", \"col\": 6}}, {\"id\": \"rc_card_nc\", \"type\": \"card\", \"data\": {\"card_name\": \"Number Cards\", \"col\": 6}}]",
+ "creation": "2026-08-09 23:22:46.023053",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "shield",
+ "idx": 0,
+ "indicator_color": "orange",
+ "is_hidden": 0,
+ "label": "Role Control",
+ "link_type": "DocType",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "UI Controls",
+   "link_count": 1,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Form Button Control",
+   "link_count": 0,
+   "link_to": "Form Button Control",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Number Cards",
+   "link_count": 1,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Number Card Control",
+   "link_count": 0,
+   "link_to": "Number Card Control",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-08-09 23:22:46.023053",
+ "modified_by": "Administrator",
+ "module": "Role Control",
+ "name": "Role Control",
+ "number_cards": [
+  {
+   "label": "Button Rules",
+   "number_card_name": "RC Button Rules"
+  },
+  {
+   "label": "Number Card Rules",
+   "number_card_name": "RC Number Card Rules"
+  },
+  {
+   "label": "Hidden Cards",
+   "number_card_name": "RC Hidden Cards"
+  }
+ ],
+ "owner": "Administrator",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [
+  {
+   "role": "System Manager"
+  }
+ ],
+ "sequence_id": 20.0,
+ "shortcuts": [
+  {
+   "color": "Blue",
+   "doc_view": "List",
+   "label": "Form Button Control",
+   "link_to": "Form Button Control",
+   "type": "DocType"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "label": "Number Card Control",
+   "link_to": "Number Card Control",
+   "type": "DocType"
+  },
+  {
+   "color": "Red",
+   "doc_view": "List",
+   "label": "Chief Manager Seed",
+   "link_to": "Number Card Control",
+   "stats_filter": "{\"is_system_seed\": 1}",
+   "type": "DocType"
+  }
+ ],
+ "title": "Role Control",
+ "type": "Workspace"
+}

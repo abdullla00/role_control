@@ -1,0 +1,41 @@
+{
+ "actions": [],
+ "creation": "2026-08-09 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "number_card",
+  "card_label"
+ ],
+ "fields": [
+  {
+   "fieldname": "number_card",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Number Card",
+   "options": "Number Card",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "number_card.label",
+   "fieldname": "card_label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Label",
+   "read_only": 1
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-08-09 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Role Control",
+ "name": "Number Card Control Ignored Detail",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

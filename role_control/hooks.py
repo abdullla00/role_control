@@ -130,13 +130,13 @@ app_include_js = "/assets/role_control/js/form_button_control.js"
 # -----------
 # Permissions evaluated in scripted ways
 
-# permission_query_conditions = {
-# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-# }
-#
-# has_permission = {
-# 	"Event": "frappe.desk.doctype.event.event.has_permission",
-# }
+permission_query_conditions = {
+	"Number Card": "role_control.role_control.api.number_card_control.get_permission_query_conditions",
+}
+
+has_permission = {
+	"Number Card": "role_control.role_control.api.number_card_control.has_number_card_permission",
+}
 
 # Document Events
 # ---------------
@@ -147,7 +147,32 @@ doc_events = {
 		"on_update": "role_control.role_control.api.button_control.clear_cache_on_doc_event",
 		"on_trash": "role_control.role_control.api.button_control.clear_cache_on_doc_event",
 	},
+	"Number Card Control": {
+		"on_update": "role_control.role_control.api.number_card_control.clear_rules_cache",
+		"on_trash": "role_control.role_control.api.number_card_control.clear_rules_cache",
+	},
+	"Number Card": {
+		"after_insert": "role_control.role_control.api.number_card_control.maybe_append_card_to_seed",
+		"on_update": "role_control.role_control.api.number_card_control.maybe_append_card_to_seed",
+		"on_trash": "role_control.role_control.api.number_card_control.clear_inaccessible_cache",
+	},
+	"User": {
+		"on_update": "role_control.role_control.api.number_card_control.clear_caches_on_user_update",
+	},
+	"Property Setter": {
+		"on_update": "role_control.role_control.api.number_card_control.clear_inaccessible_cache",
+		"on_trash": "role_control.role_control.api.number_card_control.clear_inaccessible_cache",
+	},
+	"Custom DocPerm": {
+		"on_update": "role_control.role_control.api.number_card_control.clear_inaccessible_cache",
+		"on_trash": "role_control.role_control.api.number_card_control.clear_inaccessible_cache",
+	},
 }
+
+after_migrate = [
+	"role_control.role_control.api.number_card_control.after_migrate",
+	"role_control.role_control.api.workspace_setup.after_migrate",
+]
 
 # Scheduled Tasks
 # ---------------
@@ -185,10 +210,15 @@ doc_events = {
 
 # Overriding Methods
 # ------------------------------
-#
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "role_control.event.get_events"
-# }
+
+override_whitelisted_methods = {
+	"frappe.desk.doctype.number_card.number_card.get_result": (
+		"role_control.role_control.api.number_card_control.get_result"
+	),
+	"frappe.desk.doctype.number_card.number_card.get_percentage_difference": (
+		"role_control.role_control.api.number_card_control.get_percentage_difference"
+	),
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
