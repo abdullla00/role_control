@@ -218,6 +218,12 @@ override_whitelisted_methods = {
 	"frappe.desk.doctype.number_card.number_card.get_percentage_difference": (
 		"role_control.role_control.api.number_card_control.get_percentage_difference"
 	),
+	# Stock Entry form reads a few Stock Settings flags via client.get_value /
+	# get_single_value without needing Stock Settings DocType access.
+	"frappe.client.get_value": "role_control.role_control.api.settings_field_proxy.get_value",
+	"frappe.client.get_single_value": (
+		"role_control.role_control.api.settings_field_proxy.get_single_value"
+	),
 }
 #
 # each overriding function accepts a `data` argument;

@@ -110,3 +110,13 @@ Empty workspace column gaps may remain where a middle card was hidden (client pr
 ### Bypass
 
 Same as Form Button Control: **Administrator** only.
+
+## Settings field proxy (Stock Settings)
+
+Stock Entry form JS reads a few **Stock Settings** flags via `frappe.client.get_value` / `get_single_value`. Those methods require DocType read, but operational roles (e.g. Chief Manager) must not open Stock Settings.
+
+`role_control` overrides those two methods and returns **only** allowlisted operational fields when the user can read Stock Entry (or related stock DocTypes) but lacks Stock Settings read. Valuation / price-list / freeze fields remain denied.
+
+| Key | Default | Meaning |
+| --- | --- | --- |
+| `role_control_settings_field_proxy` | `1` | Enable allowlisted Singles field proxy |
