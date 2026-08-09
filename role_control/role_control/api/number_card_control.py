@@ -20,7 +20,7 @@ CACHE_TTL = 300
 SEED_DOC_NAME = "NCC-CHIEF-MANAGER-SENSITIVE"
 SEED_ROLE = "Chief Manager"
 SENSITIVE_FUNCTIONS = frozenset({"Sum", "Average", "Minimum", "Maximum"})
-FALLBACK_SENSITIVE_CARDS = ("Manufactured Items Value",)
+FALLBACK_SENSITIVE_CARDS = ("Manufactured Items Value", "Total Stock Value")
 PREFERRED_FIELDTYPES = frozenset({"Currency", "Float", "Percent", "Int"})
 
 
@@ -439,6 +439,21 @@ def sync_ignored_cards_from_removal(doc):
 			ignored.add(removed)
 
 
+def _get_or_create_seed_doc():
+	"""Return existing system seed doc (canonical name or is_system_seed), or None."""
+	if frappe.db.exists("Number Card Control", SEED_DOC_NAME):
+		return frappe.get_doc("Number Card Control", SEED_DOC_NAME)
+
+	existing = frappe.db.get_value(
+		"Number Card Control",
+		{"is_system_seed": 1, "role": SEED_ROLE},
+		"name",
+	)
+	if existing:
+		return frappe.get_doc("Number Card Control", existing)
+	return None
+
+
 def ensure_chief_manager_sensitive_seed(card_names: list[str] | None = None) -> str | None:
 	"""Create/update the Chief Manager auto-seed document (append-once)."""
 	if not auto_seed_enabled():
@@ -449,8 +464,8 @@ def ensure_chief_manager_sensitive_seed(card_names: list[str] | None = None) -> 
 	names = set(card_names if card_names is not None else get_sensitive_number_cards())
 	names = {n for n in names if frappe.db.exists("Number Card", n)}
 
-	if frappe.db.exists("Number Card Control", SEED_DOC_NAME):
-		doc = frappe.get_doc("Number Card Control", SEED_DOC_NAME)
+	doc = _get_or_create_seed_doc()
+	if doc:
 		doc.db_set("is_system_seed", 1, update_modified=False)
 		if not doc.role:
 			doc.db_set("role", SEED_ROLE, update_modified=False)
